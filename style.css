@@ -7,6 +7,24 @@ body {
     background-color: #292828;
 }
 
-.row>* { 
-   padding-left: 0; 
-}    
+.custom-border{
+    border-right: solid 0.5px #ffffffc2;
+    border-left: 1px solid #000;
+}
+
+.left-side{
+    background: #292828;
+    background-color: #292828;
+}
+
+.custom-padding{
+    margin-left: 110px;
+}
+/* 
+.main{
+    height: 60vh;
+} */
+
+.amount h3{
+    font-size: 5em;
+}

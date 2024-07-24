@@ -20,11 +20,63 @@ body {
 .custom-padding{
     margin-left: 110px;
 }
-/* 
-.main{
-    height: 60vh;
-} */
 
-.amount h3{
+.main{
+    margin-left: 30px;
+}
+
+.amount{
+    font-size: 6em;
+}
+
+.amount span{
+    font-size: 24px;
+}
+
+.delete-ml{
+    margin-left: -12px;
+}
+
+.amount{
     font-size: 5em;
 }
+
+
+.leftovers .info p{
+    font-size: 0.7em;
+    margin-bottom: 0px;
+}
+
+.modal-body .otherCategoryDiv, .modal-body .mandatoryDate{
+    display: none;
+}
+
+.same-size-button{
+    height: 170px;
+}
+
+
+
+
+@media (max-width: 1279px) { /* Rozmiar md to zazwyczaj 768px */
+    
+
+    .amount {
+        font-size: 3em; 
+    }
+
+}
+
+
+/* @media (max-width: 575px) {
+    .buttons {
+        flex-direction: row !important;
+    }
+} */
+
+
+/* stare guziki
+<div class="col-lg-1 col-sm-2 gap-3 d-flex flex-lg-column flex-sm-row align-items-center justify-content-center buttons">
+<button type="button" class="btn btn-success same-size-button" id="addMoney" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="changeModalTittle('add')">+</button>
+<button type="button" class="btn btn-danger same-size-button" id="subMoney" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="changeModalTittle('sub')">-</button>
+</div> */

@@ -57,3 +57,19 @@ if (isset($_SESSION['importantDateDiff'])) {
 }
 
 
+if(isset($_POST['save_daily'])){
+    $amountInput = $_POST['amountInput'];
+    $dailyCategory = $_POST['dailyCategory'];
+    $dailyDate = $_POST['dailyDate'];
+
+    if($dailyCategory === 'other'){
+        $dailyCategory = $_POST['otherCategory'];
+    }
+
+    if (!empty($amountInput) && !empty($dailyCategory) && !empty($dailyDate)){
+        $sqlInsertDaily = "INSERT INTO dailytransactions (date, amount, category) VALUES ('$dailyDate', '$amountInput', '$dailyDate')";
+        $conn->query($sqlInsertDaily);
+        $conn->close();
+        header('Location: index.php');
+    }
+}

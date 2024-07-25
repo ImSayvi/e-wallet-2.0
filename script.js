@@ -26,22 +26,28 @@ function showSelect(checkbox){
 }
 
 // funkcja do zmiany tytułu modala, dodania minusa i zapobieganiu usuniecia go
-let modalTittle = document.getElementById("exampleModalLabel");
+let modalTittle = document.getElementById('exampleModalLabel');
 let modalamountInput = document.getElementById("amountInput");
+let modalSelect = document.getElementById('category');
 let initialMinus = false;
 
-function changeModalTittle(action){
-    if(action === 'add'){
+function changeModalTittle(action) {
+    if(action === 'add') {
         modalTittle.innerText = "Dodawanie pieniędzy do budżetu dziennego";
         modalamountInput.value = "";
         initialMinus = false;
+        modalSelect.value = 'other';
+        modalSelect.setAttribute("disabled", true);
+        document.getElementById("otherCategoryDiv").style.display = "block";
     }
-    if(action === 'sub'){
+    if(action === 'sub') {
         modalTittle.innerText = "Odejmowanie pieniędzy z budżetu dziennego";
         modalamountInput.value = "-";
         initialMinus = true;
+        modalSelect.removeAttribute("disabled");
     }
 }
+
 
 modalamountInput.addEventListener('keydown', function(event) {
     if (initialMinus && (event.key === 'Backspace' || event.key === 'Delete')) {

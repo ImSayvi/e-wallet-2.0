@@ -55,9 +55,13 @@ body {
     height: 170px;
 }
 
+/* .deleteDaily{
+    height: 20px;
+}
 
-
-
+.deleteDaily i{
+    font-size: 5px;
+} */
 @media (max-width: 1279px) { /* Rozmiar md to zazwyczaj 768px */
     
 

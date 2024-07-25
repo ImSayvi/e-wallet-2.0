@@ -8,7 +8,7 @@ $password = "";
 $dbname = "e-wallet 2.0";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
+$showError = $_SESSION['showError'] ;
 
 if (isset($_POST['save_income'])){
     $incomeAmount = $_POST['incomeAmount'];
@@ -59,17 +59,27 @@ if (isset($_SESSION['importantDateDiff'])) {
 
 if(isset($_POST['save_daily'])){
     $amountInput = $_POST['amountInput'];
-    $dailyCategory = $_POST['dailyCategory'];
+    $dailyCategory = $_POST['dailyCategory'] ?? null; //dzieki temu, jesli nie wyslane, ustawi null
     $dailyDate = $_POST['dailyDate'];
+    $leftovers = $_POST['leftovers'];
 
-    if($dailyCategory === 'other'){
+    if($dailyCategory === 'other' || $dailyCategory === null){
         $dailyCategory = $_POST['otherCategory'];
     }
 
-    if (!empty($amountInput) && !empty($dailyCategory) && !empty($dailyDate)){
-        $sqlInsertDaily = "INSERT INTO dailytransactions (date, amount, category) VALUES ('$dailyDate', '$amountInput', '$dailyDate')";
+    if (empty($amountInput) || $amountInput === "-" || $dailyCategory === 'wybierz kategorie' || empty($dailyDate)) {
+        $_SESSION['showError'] = "Uzupełnij wszystkie pola XD";
+        header('Location: index.php');
+        exit;
+    } else {
+        $sqlInsertDaily = "INSERT INTO dailytransactions (date, amount, category, leftovers) VALUES ('$dailyDate', '$amountInput', '$dailyCategory','$leftovers')";
         $conn->query($sqlInsertDaily);
         $conn->close();
+        $_SESSION['showError'] = false;
         header('Location: index.php');
+        exit;
     }
+
+    
+    
 }

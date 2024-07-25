@@ -32,6 +32,29 @@ if (isset($_GET['deleteid'])) {
         echo "Error preparing statement: " . $conn->error;
     }
 
+ 
+}
+
+
+if (isset($_GET['deleteDailyId'])){
+    $dailyID = $_GET['deleteDailyId'];
+
+    $deleteDailyQuery = "DELETE FROM dailytransactions WHERE id = ?";
+    $stat = $conn->prepare($deleteDailyQuery);
+
+    if($stat){
+        $stat->bind_param("i", $dailyID);
+
+        if($stat->execute()){
+            header('location: index.php');
+            exit();
+        } else {
+            echo "Error deleting record: " . $stat->error;
+        }
+        }
+    }else {
+    echo "Error preparing statement: " . $conn->error;
+
     $conn->close();
 }
 ?>

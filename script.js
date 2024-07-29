@@ -78,7 +78,7 @@ function clearInputs() {
     document.getElementById("otherCategoryDiv").style.display = "none";
     document.getElementById("feeAmount").value = "";
     document.getElementById("whatFor").value = "";
-    
+    document.getElementById("icon").value = "wybierz ikonke";
 }
 
 // wywolanie funkcji do zmiany daty na dzisiejsza

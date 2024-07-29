@@ -21,12 +21,18 @@ $todayDate = date('Y-m-d');
 
 if (isset($_GET['deleteMandatoryId'])) {
     $mandatoryId = $conn->real_escape_string($_GET['deleteMandatoryId']); 
+    $latestDate = $_SESSION['latestDate'];
+     
+    $latestDateType = new DateTime($latestDate); // Konwersja stringa na DateTime
+    $latestDateType->modify("-1 day");
+    $dayBeforeLatest = $latestDateType->format('Y-m-d');  //usuwanie ustawia na date przed wyplata, dla statystyk
 
+    
 
-    $updateMandatoryQuery = "UPDATE mandatory SET expiry = '$todayDate' WHERE id = '$mandatoryId'";
+    $updateMandatoryQuery = "UPDATE mandatory SET expiry = '$dayBeforeLatest' WHERE id = '$mandatoryId'";
     
     if ($conn->query($updateMandatoryQuery) === TRUE) {
-        header('Location: index.php');
+         header('Location: index.php');
         exit();
     } else {
         echo "Error updating record: " . $conn->error;
@@ -41,6 +47,7 @@ if (isset($_POST['saveMandatoryEdit'])){
 
     $mandatoryAmount = $_POST['mandatoryAmount'];
     $mandatoryCategory = $_POST['mandatoryCategory'];
+    $mandatoryCategory = ucfirst($mandatoryCategory);
     $mandatoryId = $_POST['mandatoryId'];
     $mandatoryExpiryChecked = isset($_POST['mandatoryExpiryChecked']) ? 1 : 0;
 

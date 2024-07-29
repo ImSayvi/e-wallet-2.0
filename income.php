@@ -34,6 +34,7 @@ if (isset($_SESSION['importantDateDiff'])) {
         $mandatoryAmount = $_POST['mandatoryAmount'];
         $mandatoryCategory = $_POST['mandatoryCategory'];
         $mandatoryExpiryChecked = isset($_POST['mandatoryExpiryChecked']) ? 1 : 0;
+        $mandatoryIcon = $_POST['icon'];
 
         if ($mandatoryExpiryChecked) {
             $latestDateType = new DateTime($latestDate); // Konwersja stringa na DateTime
@@ -46,7 +47,7 @@ if (isset($_SESSION['importantDateDiff'])) {
         }
 
         if (!empty($mandatoryAmount) && !empty($mandatoryCategory)) {
-            $sqlInsertMandatory = "INSERT INTO mandatory (amount, category, date, expiry) VALUES ('$mandatoryAmount', '$mandatoryCategory', '$addMandatoryDate', '$mandatoryExpiryDate')";
+            $sqlInsertMandatory = "INSERT INTO mandatory (amount, category, date, expiry, icon) VALUES ('$mandatoryAmount', '$mandatoryCategory', '$addMandatoryDate', '$mandatoryExpiryDate', '$mandatoryIcon')";
             $conn->query($sqlInsertMandatory);
             $conn->close();
             header('Location: index.php');
@@ -63,15 +64,18 @@ if(isset($_POST['save_daily'])){
     $dailyDate = $_POST['dailyDate'];
     $leftovers = $_POST['leftovers'];
 
-    if($dailyCategory === 'other' || $dailyCategory === null){
+    
+    if($dailyCategory === null){
         $dailyCategory = $_POST['otherCategory'];
     }
+    
 
     if (empty($amountInput) || $amountInput === "-" || $dailyCategory === 'wybierz kategorie' || empty($dailyDate)) {
         $_SESSION['showError'] = "Uzupełnij wszystkie pola XD";
-        header('Location: index.php');
+       header('Location: index.php');
         exit;
     } else {
+        $dailyCategory = ucfirst($dailyCategory);
         $sqlInsertDaily = "INSERT INTO dailytransactions (date, amount, category, leftovers) VALUES ('$dailyDate', '$amountInput', '$dailyCategory','$leftovers')";
         $conn->query($sqlInsertDaily);
         $conn->close();

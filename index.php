@@ -50,7 +50,7 @@ $_SESSION['totalMandatory'] = $totalMandatory;
 
 
 //do historii wpłat
-$queryDailyIncome = "SELECT * FROM dailytransactions WHERE amount > 0 AND date <= '$mandatoryExpiryDate' AND date > '$latestDate' ORDER BY date DESC";
+$queryDailyIncome = "SELECT * FROM dailytransactions WHERE amount > 0 AND date <= '$mandatoryExpiryDate' AND date >= '$latestDate' ORDER BY date DESC";
 $resultDailyIncome = $conn->query($queryDailyIncome);
 $resultDailyIncomeArray = [];
 while ($dailyIncRow = $resultDailyIncome->fetch_assoc()) {
@@ -65,7 +65,7 @@ foreach ($resultDailyIncomeArray as $dailyIncRow) {
 $_SESSION['totalDailyIncome'] = $totalDailyIncome;
 
 //do historii wypłat
-$queryDailyOutcome = "SELECT * FROM dailytransactions WHERE amount < 0 AND date <= '$mandatoryExpiryDate' AND date > '$latestDate' ORDER BY date DESC";
+$queryDailyOutcome = "SELECT * FROM dailytransactions WHERE amount < 0 AND date <= '$mandatoryExpiryDate' AND date >= '$latestDate' ORDER BY date DESC";
 $resultDailyOutcome = $conn->query($queryDailyOutcome);
 $resultDailyOutcomeArray = [];
 while ($dailyOutRow = $resultDailyOutcome->fetch_assoc()) {
@@ -83,7 +83,13 @@ foreach ($resultDailyOutcomeArray as $dailyOutRow) {
 $_SESSION['totalDailyOutcome'] = $totalDailyOutcome;
 
 // obliczenia do budzetu dziennego
-$importantDateDiff = $_SESSION['importantDateDiff'];
+// $importantDateDiff = $_SESSION['importantDateDiff']; nie da rady uniknąć DRY z jakiegoś powodu :(
+$sql = "SELECT incomeDate FROM income ORDER BY incomeDate DESC LIMIT 1 OFFSET 1";
+$result = $conn->query($sql);
+$secondLastRecord = $result->fetch_assoc();
+$secondLast = $secondLastRecord['incomeDate'];
+$importantDateDiff = dateDiffinDays($latestDate, $secondLast);
+
 $todayDate = date('Y-m-d');
 $latestDateFormatFix = new DateTime($latestDate);
 $todayDateFormatFix = new DateTime($todayDate);
@@ -94,7 +100,12 @@ $dailyTotal = 0;
 $diffForDaily = date_diff($latestDateFormatFix, $todayDateFormatFix);
 $numberOfDaysDaily = $diffForDaily->days;
 
-$dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $totalDailyOutcome; //dałam +1 żeby liczyło też "dzień dizsiejszy"
+$dailyAdd = (($numberOfDaysDaily +1) * $dailyRound);
+if($dailyAdd > $latestIncome){
+    $dailyAdd = $latestIncome;
+}
+
+$dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 żeby liczyło też "dzień dizsiejszy"
 ?>
 
 
@@ -126,12 +137,12 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                         <input type="hidden" name="leftovers" value="<?php echo $dailyTotal; ?>">
                         <div class="form-group">
                             <label for="buttonAmount">Kwota</label>
-                            <input type="text" class="form-control" id="amountInput" name="amountInput" placeholder="Wprowadź kwotę">
+                            <input type="text" class="form-control" id="amountInput" name="amountInput" placeholder="Wprowadź kwotę" required>
                         </div>
 
                         <div class="form-group">
                             <label for="category">Kategoria</label>
-                            <select class="form-select" id="category" onchange="showInput(this)" name="dailyCategory">
+                            <select class="form-select" id="category" onchange="showInput(this)" name="dailyCategory" required>
                                 <option selected>wybierz kategorie</option>
                                 <option value="other">Inne</option>
                                 <?php
@@ -144,12 +155,12 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
 
                         <div class="form-group otherCategoryDiv" id="otherCategoryDiv">
                             <label for="otherCategory">Inna kategoria</label>
-                            <input type="text" class="form-control" id="otherCategory" aria-describedby="otherCategory" placeholder="Wprowadź nazwę kategorii" name="otherCategory">
+                            <input type="text" class="form-control" id="otherCategory" aria-describedby="otherCategory" placeholder="Wprowadź nazwę kategorii" name="otherCategory" required>
                         </div>
 
                         <div class="form-group">
                             <label for="date">Data</label>
-                            <input type="date" class="form-control" id="date" name="dailyDate">
+                            <input type="date" class="form-control" id="date" name="dailyDate" required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -232,17 +243,47 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
         <div class="row flex-nowrap">
             <div class="col-auto col-md-3 col-xl-2 px-0 sticky-top">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 left-side">
-                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <i class="fa-solid fa-wallet fs-5" style="color: #ffffff;"></i><span class="fs-5 ps-2 d-none d-sm-inline">E-WALLET 2.0</span>
+                    <a href="" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <i class="fa-solid fa-wallet fs-5 pe-1" style="color: #ffffff;"></i><span class="fs-5 ps-2 pe-1 d-none d-sm-inline">E-WALLET </span> 2.0
                     </a>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <div class="text-decoration-underline">Do zapłacenia:</div>
                         <?php
                         foreach ($resultsArray as $row) {
-                            echo '<li class="nav-item">
-                                    <a href="#" class="nav-link align-middle px-0">
-                                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline">' . $row['category'] . ' </span>' . $row['amount'] . ' zł 
+                      
+                            $totalForThisCat = 0;
+                            
+                            
+                            $queryCatFromDaily = "SELECT * FROM dailytransactions 
+                            WHERE date <= '$mandatoryExpiryDate' 
+                            AND date >= '$latestDate' 
+                            AND category = '{$row['category']}' 
+                            ORDER BY date DESC";
+
+
+                            $resultCatFromDaily = $conn->query($queryCatFromDaily);
+
+                            while ($dailyRow = $resultCatFromDaily->fetch_assoc()) {
+                                   
+                                $totalForThisCat += abs($dailyRow['amount']);
+
+                            }
+                            $thisCatToPay = $row['amount'];
+                            $toPay = $thisCatToPay - $totalForThisCat;
+
+                            if($thisCatToPay <= $totalForThisCat){
+                            echo '<li class="nav-item sidebar">
+                                    <a href="#" class="nav-link align-middle px-0 ">
+                                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline toPay text-white text-decoration-line-through">' . $row['category'] . '</span><span class="toPay text-success"> ' .$toPay.' zł</span>  
                                     </a>
                                 </li>';
+                            }else if ($thisCatToPay > $totalForThisCat){
+                                echo '<li class="nav-item sidebar">
+                                    <a href="#" class="nav-link align-middle px-0 ">
+                                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline toPay text-white">' . $row['category'] . '</span><span class="toPay text-danger"> ' .$toPay.' zł</span>  
+                                    </a>
+                                </li>';
+                            }
                         }
                         ?>
                     </ul>
@@ -290,7 +331,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                 unset($_SESSION['showError']);
                             }
                         ?></div>
-                        <div class="row g-0 justify-content-center main pb-3 pt-3 ">
+                        <div class="row g-0 justify-content-center main pb-3 pt-3">
 
                             <div class="col-1 d-flex align-items-center justify-content-end buttons">
                                 <button type="button" class="btn btn-danger same-size-button" id="subMoney" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="changeModalTittle('sub')">-</button>
@@ -312,7 +353,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
 
                             </div>
                         </div>
-                        <div class="row history">
+                        <div class="row history ps-1">
                             <div class="col expenses">
                                 <h3 class="text-danger">Wydatki</h3>
                                 <table class="table table-sm table-striped">
@@ -321,7 +362,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                             <th scope="col">Kwota</th>
                                             <th scope="col">Na co</th>
                                             <th scope="col">Kiedy</th>
-                                            <th scope="col">Ile zostało</th>
+                                            <th scope="col">Ile było</th>
                                             <th scope="col">Usuń</th>
                                         </tr>
                                     </thead>
@@ -332,7 +373,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                             <td class="text-danger">' . $dailyOutRow['amount'] . ' zł</td>
                                             <td>' . $dailyOutRow['category'] . '</td>
                                             <td>' . $dailyOutRow['date'] . '</td>
-                                            <td>' . $dailyOutRow['leftovers'] . '</td>
+                                            <td>' . $dailyOutRow['leftovers'] . ' zł</td>
                                             <td>
                                                 <button type="button" class="btn badge rounded-pill btn-danger deleteDaily" ><a href="delete.php?deleteDailyId=' . $dailyOutRow['id'] . '" class="text-light text-align-center"><i class="fa-solid fa-minus"></i></a></button>
                                             </td>
@@ -348,9 +389,9 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                     <thead>
                                         <tr>
                                             <th scope="col">Kwota</th>
-                                            <th scope="col">Na co</th>
+                                            <th scope="col">Za co</th>
                                             <th scope="col">Kiedy</th>
-                                            <th scope="col">Ile zostało</th>
+                                            <th scope="col">Ile było</th>
                                             <th scope="col">Usuń</th>
                                         </tr>
                                     </thead>
@@ -361,7 +402,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                             <td class="text-success">+' . $dailyIncRow['amount'] . ' zł</td>
                                             <td>' . $dailyIncRow['category'] . '</td>
                                             <td>' . $dailyIncRow['date'] . '</td>
-                                            <td>' . $dailyIncRow['leftovers'] . '</td>
+                                            <td>' . $dailyIncRow['leftovers'] . ' zł</td>
                                             <td>
                                                 <button type="button" class="btn badge rounded-pill btn-danger deleteDaily" ><a href="delete.php?deleteDailyId=' . $dailyIncRow['id'] . '" class="text-light text-align-center"><i class="fa-solid fa-minus"></i></a></button>
                                             </td>
@@ -407,7 +448,7 @@ $dailyTotal = (($numberOfDaysDaily + 1) * $dailyRound) + $totalDailyIncome + $to
                                         
                                         $queryCatFromDaily = "SELECT * FROM dailytransactions 
                                         WHERE date <= '$mandatoryExpiryDate' 
-                                        AND date > '$latestDate' 
+                                        AND date >= '$latestDate' 
                                         AND category = '{$row['category']}' 
                                         ORDER BY date DESC";
 

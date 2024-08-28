@@ -86,3 +86,16 @@ window.onload = function() {
     document.getElementById("date").value = setTodayDate();
 };
 
+document.addEventListener('DOMContentLoaded', function() {
+            const tooltips = document.querySelectorAll('.tt');
+            tooltips.forEach(t => {
+                new bootstrap.Tooltip(t);
+            });
+        });
+
+var amountInput = document.getElementById("amountInput");
+let whatType = typeof(amountInput);
+
+if(whatType === "string"){
+  
+}

@@ -73,9 +73,11 @@ while ($dailyOutRow = $resultDailyOutcome->fetch_assoc()) {
 }
 
 $totalDailyOutcome = 0;
+$mandatoryFromDailyOut = 0;
 foreach ($resultDailyOutcomeArray as $dailyOutRow) {
     if (in_array($dailyOutRow['category'], $mandatoryCategories)) {
         $totalDailyOutcome -= 0;
+        $mandatoryFromDailyOut -= $dailyOutRow['amount'];
     } else {
         $totalDailyOutcome += $dailyOutRow['amount'];
     }
@@ -106,6 +108,12 @@ if($dailyAdd > $latestIncome){
 }
 
 $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 żeby liczyło też "dzień dizsiejszy"
+
+
+$queryOnAcc = "SELECT * FROM dailytransactions WHERE date <= '$mandatoryExpiryDate' AND date >= '$latestDate' ORDER BY date DESC";
+$resultOnAcc = $conn->query($queryOnAcc);
+
+$onAccount = $latestIncome + $totalDailyIncome + $totalDailyOutcome - $mandatoryFromDailyOut;
 ?>
 
 
@@ -118,6 +126,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>E-WALLET 2.0</title>
     <link rel="stylesheet" href="style.css" <?php echo time(); ?>>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 
@@ -137,7 +146,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
                         <input type="hidden" name="leftovers" value="<?php echo $dailyTotal; ?>">
                         <div class="form-group">
                             <label for="buttonAmount">Kwota</label>
-                            <input type="text" class="form-control" id="amountInput" name="amountInput" placeholder="Wprowadź kwotę" required>
+                            <input type="text" class="form-control" id="amountInput" name="amountInput" placeholder="Wprowadź kwotę" required autocomplete="off">
                         </div>
 
                         <div class="form-group">
@@ -155,7 +164,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
 
                         <div class="form-group otherCategoryDiv" id="otherCategoryDiv">
                             <label for="otherCategory">Inna kategoria</label>
-                            <input type="text" class="form-control" id="otherCategory" aria-describedby="otherCategory" placeholder="Wprowadź nazwę kategorii" name="otherCategory" required>
+                            <input type="text" class="form-control" id="otherCategory" aria-describedby="otherCategory" placeholder="Wprowadź nazwę kategorii" name="otherCategory">
                         </div>
 
                         <div class="form-group">
@@ -185,11 +194,11 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="mandatoryAmount" class="form-label">Kwota</label>
-                            <input type="number" class="form-control" id="mandatoryAmount" name="mandatoryAmount">
+                            <input type="number" class="form-control" id="mandatoryAmount" name="mandatoryAmount" autocomplete="off" require>
                         </div>
                         <div class="mb-3">
                             <label for="mandatoryCategory" class="form-label">Na co</label>
-                            <input type="text" class="form-control" id="mandatoryCategory" name="mandatoryCategory">
+                            <input type="text" class="form-control" id="mandatoryCategory" name="mandatoryCategory" require>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" name="mandatoryExpiryChecked" id="flexCheckDefault">
@@ -219,7 +228,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="incomeAmount" class="form-label">Kwota</label>
-                            <input type="number" class="form-control" id="incomeAmount" name="incomeAmount">
+                            <input type="number" class="form-control" id="incomeAmount" name="incomeAmount" require autocomplete="off">
                         </div>
                         <div class="form-group">
                             <label for="date">Data</label>
@@ -241,7 +250,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
 
     <div class="container-fluid bg-dark">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-0 sticky-top">
+            <div class="col-auto col-md-3 col-xl-2 px-0 sticky-top vh-100">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 left-side">
                     <a href="" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                         <i class="fa-solid fa-wallet fs-5 pe-1" style="color: #ffffff;"></i><span class="fs-5 ps-2 pe-1 d-none d-sm-inline">E-WALLET </span> 2.0
@@ -274,13 +283,13 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
                             if($thisCatToPay <= $totalForThisCat){
                             echo '<li class="nav-item sidebar">
                                     <a href="#" class="nav-link align-middle px-0 ">
-                                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline toPay text-white text-decoration-line-through">' . $row['category'] . '</span><span class="toPay text-success"> ' .$toPay.' zł</span>  
+                                        <span class="ms-1 d-none d-sm-inline toPay text-white text-decoration-line-through">' . $row['category'] . '</span><span class="toPay text-success"> ' .$toPay.' zł</span>  
                                     </a>
                                 </li>';
                             }else if ($thisCatToPay > $totalForThisCat){
                                 echo '<li class="nav-item sidebar">
                                     <a href="#" class="nav-link align-middle px-0 ">
-                                        <i class="fs-4 bi-house"></i> <span class="ms-1 d-none d-sm-inline toPay text-white">' . $row['category'] . '</span><span class="toPay text-danger"> ' .$toPay.' zł</span>  
+                                        <span class="ms-1 d-none d-sm-inline toPay text-white">' . $row['category'] . '</span><span class="toPay text-danger"> ' .$toPay.' zł</span>  
                                     </a>
                                 </li>';
                             }
@@ -336,7 +345,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
                             <div class="col-1 d-flex align-items-center justify-content-end buttons">
                                 <button type="button" class="btn btn-danger same-size-button" id="subMoney" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="changeModalTittle('sub')">-</button>
                             </div>
-                            <div class="col-5 col-lg-2 col-md-4 leftovers">
+                            <div class="col-5 col-lg-2 col-md-4 leftovers tt" data-bs-placement = "bottom" title="Na koncie powinno być około <?php echo $onAccount?> zł">
                                 <p class="mb-0">masz do wydania<br></p>
                                 <h3 class="amount"><?php echo $dailyTotal; ?><span>zł</span></h3>
                                 <div class="info">
@@ -613,6 +622,7 @@ $dailyTotal = $dailyAdd + $totalDailyIncome + $totalDailyOutcome; //dałam +1 ż
 
         <script src="https://kit.fontawesome.com/988d321f51.js" crossorigin="anonymous"></script>
         <script src="script.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 

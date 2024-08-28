@@ -49,6 +49,7 @@ if (isset($_POST['saveMandatoryEdit'])){
     $mandatoryCategory = $_POST['mandatoryCategory'];
     $mandatoryCategory = ucfirst($mandatoryCategory);
     $mandatoryId = $_POST['mandatoryId'];
+    $mandatoryIcon = $_POST['icon'];
     $mandatoryExpiryChecked = isset($_POST['mandatoryExpiryChecked']) ? 1 : 0;
 
     if ($mandatoryExpiryChecked) {
@@ -62,7 +63,7 @@ if (isset($_POST['saveMandatoryEdit'])){
     }
 
     if (!empty($mandatoryAmount) && !empty($mandatoryCategory)) {
-        $sqlInsertMandatory = "UPDATE mandatory SET amount = '$mandatoryAmount', category = '$mandatoryCategory', date = '$todayDate', expiry = '$mandatoryExpiryDate' WHERE id = '$mandatoryId'";
+        $sqlInsertMandatory = "UPDATE mandatory SET amount = '$mandatoryAmount', category = '$mandatoryCategory', date = '$todayDate', expiry = '$mandatoryExpiryDate', icon = '$mandatoryIcon'  WHERE id = '$mandatoryId'";
         $conn->query($sqlInsertMandatory);
         $conn->close();
         header('Location: index.php');

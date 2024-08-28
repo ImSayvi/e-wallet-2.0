@@ -65,7 +65,7 @@ if(isset($_POST['save_daily'])){
     $leftovers = $_POST['leftovers'];
 
     
-    if($dailyCategory === null){
+    if($dailyCategory === null || $dailyCategory === 'other'){
         $dailyCategory = $_POST['otherCategory'];
     }
     
